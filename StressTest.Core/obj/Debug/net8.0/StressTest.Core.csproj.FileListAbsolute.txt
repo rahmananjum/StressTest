@@ -1,0 +1,12 @@
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\bin\Debug\net8.0\StressTest.Core.deps.json
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\bin\Debug\net8.0\StressTest.Core.dll
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\bin\Debug\net8.0\StressTest.Core.pdb
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\StressTest.Core.csproj.AssemblyReference.cache
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\StressTest.Core.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\StressTest.Core.AssemblyInfoInputs.cache
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\StressTest.Core.AssemblyInfo.cs
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\StressTest.Core.csproj.CoreCompileInputs.cache
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\StressTest.Core.dll
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\refint\StressTest.Core.dll
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\StressTest.Core.pdb
+C:\Users\Muhammad Anjum\Downloads\StressTest\StressTest\StressTest.Core\obj\Debug\net8.0\ref\StressTest.Core.dll
