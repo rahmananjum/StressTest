@@ -1,0 +1,161 @@
+@page "/history"
+@using System.Text.Json
+@inject IStressTestRunService RunService
+
+<PageTitle>Run History</PageTitle>
+
+<h2 class="mb-4">Stress Test Run History</h2>
+
+@if (_runs is null)
+{
+    <div class="d-flex align-items-center gap-2">
+        <div class="spinner-border spinner-border-sm"></div>
+        <span>Loading history...</span>
+    </div>
+}
+else if (_runs.Count == 0)
+{
+    <div class="alert alert-info">No runs recorded yet. Go to the <a href="/">Stress Test</a> page to run one.</div>
+}
+else
+{
+    <div class="row">
+        <!-- Run list -->
+        <div class="col-md-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-secondary text-white">
+                    <strong>All Runs (@_runs.Count)</strong>
+                </div>
+                <div class="list-group list-group-flush" style="max-height:75vh; overflow-y:auto;">
+                    @foreach (var run in _runs)
+                    {
+                        var isActive = _selectedRunId == run.Id;
+                        <button class="list-group-item list-group-item-action @(isActive ? "active" : "")"
+                                type="button"
+                                @onclick="@(() => SelectRun(run.Id))">
+                            <div class="d-flex justify-content-between">
+                                <span class="fw-semibold">Run #@run.Id</span>
+                                <small>@run.DurationMs ms</small>
+                            </div>
+                            <div><small>@run.RunAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</small></div>
+                            <div><small>Portfolios: @run.TotalPortfolios &nbsp;|&nbsp; Loans: @run.TotalLoans</small></div>
+                            <div><small>Total EL: <strong>@run.TotalExpectedLoss.ToString("N2")</strong></small></div>
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Run details -->
+        <div class="col-md-8">
+            @if (_isLoadingRun)
+            {
+                <div class="d-flex align-items-center gap-2 mt-3">
+                    <div class="spinner-border spinner-border-sm"></div>
+                    <span>Loading run details...</span>
+                </div>
+            }
+            else if (_selectedRun is not null)
+            {
+                <!-- Country inputs -->
+                <div class="card shadow-sm mb-3">
+                    <div class="card-header">
+                        <strong>Run #@_selectedRun.Id – Country Inputs</strong>
+                        <span class="ms-2 text-muted small">@_selectedRun.RunAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss")</span>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var inputs = JsonSerializer.Deserialize<Dictionary<string, decimal>>(_selectedRun.CountryInputsJson)
+                                         ?? new Dictionary<string, decimal>();
+                        }
+                        <div class="row">
+                            @foreach (var kv in inputs)
+                            {
+                                <div class="col-auto mb-1">
+                                    <span class="badge bg-secondary fs-6">@kv.Key: @kv.Value.ToString("+0.##;-0.##;0")%</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Portfolio results -->
+                <div class="card shadow-sm">
+                    <div class="card-header">
+                        <strong>Aggregated Portfolio Results</strong>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Portfolio</th>
+                                        <th>Country</th>
+                                        <th>CCY</th>
+                                        <th class="text-end">Loans</th>
+                                        <th class="text-end">Outstanding</th>
+                                        <th class="text-end">Collateral</th>
+                                        <th class="text-end">Scenario Collateral</th>
+                                        <th class="text-end">Expected Loss</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var r in _selectedRun.Results.OrderBy(x => x.PortId))
+                                    {
+                                        var elCss = r.TotalExpectedLoss > 0 ? "text-danger fw-bold" : "text-success";
+                                        <tr>
+                                            <td>@r.PortName</td>
+                                            <td>@r.Country</td>
+                                            <td>@r.Currency</td>
+                                            <td class="text-end">@r.LoanCount</td>
+                                            <td class="text-end">@r.TotalOutstandingAmount.ToString("N0")</td>
+                                            <td class="text-end">@r.TotalCollateralValue.ToString("N0")</td>
+                                            <td class="text-end">@r.TotalScenarioCollateralValue.ToString("N0")</td>
+                                            <td class="text-end @elCss">@r.TotalExpectedLoss.ToString("N2")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                                <tfoot class="table-secondary fw-bold">
+                                    <tr>
+                                        <td colspan="4">Total</td>
+                                        <td class="text-end">@_selectedRun.Results.Sum(r => r.TotalOutstandingAmount).ToString("N0")</td>
+                                        <td class="text-end">@_selectedRun.Results.Sum(r => r.TotalCollateralValue).ToString("N0")</td>
+                                        <td class="text-end">@_selectedRun.Results.Sum(r => r.TotalScenarioCollateralValue).ToString("N0")</td>
+                                        <td class="text-end text-danger">@_selectedRun.Results.Sum(r => r.TotalExpectedLoss).ToString("N2")</td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-secondary mt-2">Select a run on the left to view its results.</div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private IReadOnlyList<StressTestRun>? _runs;
+    private StressTestRun? _selectedRun;
+    private int? _selectedRunId;
+    private bool _isLoadingRun;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _runs = await RunService.GetRunsAsync();
+    }
+
+    private async Task SelectRun(int id)
+    {
+        _selectedRunId = id;
+        _isLoadingRun = true;
+        _selectedRun = null;
+        StateHasChanged();
+
+        _selectedRun = await RunService.GetRunWithResultsAsync(id);
+        _isLoadingRun = false;
+    }
+}
